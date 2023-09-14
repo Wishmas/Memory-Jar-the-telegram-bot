@@ -2,6 +2,10 @@
 
 ---
 
+Ссылка на бота: https://t.me/wishmasBot
+
+---
+
 ![preview](bot_gif.gif)
 
 ---
@@ -31,7 +35,3 @@
 ---
 
 Для взаимодействия с telegramAPI использовалась библиотека telebot, а для взаимодействия с БД mysql.connector.
-
----
-
-Попробовать бота в деле можно по ссылке: https://t.me/wishmasBot
