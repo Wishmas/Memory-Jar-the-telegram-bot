@@ -7,8 +7,10 @@ import bot_config as cfg
 import time
 
 bot = telebot.TeleBot(token=cfg.BOT_TOKEN)
-conn_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name="mypool", pool_size=6, database=cfg.DB_NAME, user=cfg.DB_USER, password=cfg.DB_PASSWORD,host=cfg.DB_HOST)
+conn_pool = mysql.connector.pooling.MySQLConnectionPool(
+    pool_name="mypool", pool_size=6, database=cfg.DB_NAME, user=cfg.DB_USER, password=cfg.DB_PASSWORD,host=cfg.DB_HOST)
 
+# Создает новую таблицу:
 @bot.message_handler(func=lambda message: message.text.split()[0].lower()=='create')
 def create_table(message):
     user_id, user_name, split_message = funcs.get_user_info(message)
@@ -30,7 +32,7 @@ def create_table(message):
         cur.close()
         conn.close()
 
-
+# Делает таблицу активной:
 @bot.message_handler(func=lambda message: message.text.split()[0].lower()=='use')
 def use_table(message):
     user_id, user_name, split_message = funcs.get_user_info(message)
@@ -56,6 +58,7 @@ def use_table(message):
         cur.close()
         conn.close()
 
+# Добавляет в активную таблицу новую пару:
 @bot.message_handler(func=lambda message: len(re.findall(r'[\w\s]+:[\w\s]+',message.text))!=0)
 def add_pare(message):
     user_id, user_name, split_message = funcs.get_user_info(message)
@@ -89,6 +92,7 @@ def add_pare(message):
     cur.close()
     conn.close()
 
+# Возвращает второе слово из пары:
 @bot.message_handler(func=lambda message: message.text[:3].lower().strip()=='get')
 def translate(message):
     user_id, user_name, split_message = funcs.get_user_info(message)
@@ -116,6 +120,7 @@ def translate(message):
     cur.close()
     conn.close()
 
+# Удаляет пару из активной таблицы:
 @bot.message_handler(func=lambda message: message.text[:3].lower().strip()=='del')
 def delete(message):
     user_id, user_name, split_message = funcs.get_user_info(message)
@@ -142,6 +147,7 @@ def delete(message):
     cur.close()
     conn.close()
 
+# Возвращает список таблиц пользователя:
 @bot.message_handler(commands=['tables'])
 def my_tables(message):
     user_id, user_name, split_message = funcs.get_user_info(message)
@@ -159,6 +165,7 @@ def my_tables(message):
     cur.close()
     conn.close()
 
+# Возвращает все пары из активной таблицы:
 @bot.message_handler(commands=['result'])
 def print_table(message):
     user_id, user_name, split_message = funcs.get_user_info(message)
@@ -180,6 +187,7 @@ def print_table(message):
     cur.close()
     conn.close()
 
+# Удаляет активную таблицу:
 @bot.message_handler(commands=['drop'])
 def drop_table(message):
     user_id, user_name, split_message = funcs.get_user_info(message)
@@ -198,6 +206,7 @@ def drop_table(message):
         bot.register_next_step_handler(message,confirmation,table_id,table_name)
     cur.close()
     conn.close()
+
 def confirmation(message,table_id,table_name):
     if message.text.strip().lower() == "да":
         conn = conn_pool.get_connection()
@@ -217,6 +226,7 @@ def confirmation(message,table_id,table_name):
     else:
         bot.reply_to(message, 'Удаление отменено')
 
+# Запускает режим заучивания:
 @bot.message_handler(commands=['learn'])
 def learn_mode(message):
     user_id, user_name, split_message = funcs.get_user_info(message)
@@ -281,6 +291,7 @@ def check_word(message,table_id,conn,cur,cor_cnt,inc_cnt,word,ltype):
             new_inc_cnt = inc_cnt + 1
         learn_word(message, table_id, conn, cur, new_cor_cnt, new_inc_cnt, word, ltype)
 
+# Возвращает инструкцию по эксплуатации:
 @bot.message_handler(commands=['instruct'])
 def instruct(message):
     inst = '''
@@ -302,7 +313,7 @@ _термин_ : _значение_ - добавляет в активную т�
 '''
     bot.send_message(message.chat.id, inst, parse_mode= 'Markdown')
 
-
+# Переносит пары из файла в активную таблицу:
 @bot.message_handler(content_types=['document'])
 def get_from_file(message):
     user_id, user_name, split_message = funcs.get_user_info(message)
@@ -340,6 +351,7 @@ def get_from_file(message):
     cur.close()
     conn.close()
 
+# Поддерживает коннект с Telegram и с БД:
 def keep_alive(conn_pool):
     try:
         conn = conn_pool.get_connection()
